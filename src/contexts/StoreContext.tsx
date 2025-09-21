@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { Product, CartItem, Order, Customer } from '../types';
-import { SAMPLE_PRODUCTS } from '../data/products';
+import { useFirebaseProducts } from '../hooks/useFirebaseProducts';
+import { useFirebaseOrders } from '../hooks/useFirebaseOrders';
 
 interface StoreState {
   products: Product[];
@@ -13,17 +14,14 @@ interface StoreState {
 }
 
 type StoreAction = 
+  | { type: 'SET_PRODUCTS'; payload: Product[] }
+  | { type: 'SET_ORDERS'; payload: Order[] }
   | { type: 'SET_VIEW'; payload: 'store' | 'order' | 'admin' }
   | { type: 'SET_SELECTED_PRODUCT'; payload: Product | null }
-  | { type: 'ADD_PRODUCT'; payload: Product }
-  | { type: 'UPDATE_PRODUCT'; payload: Product }
-  | { type: 'DELETE_PRODUCT'; payload: string }
-  | { type: 'CREATE_ORDER'; payload: Order }
-  | { type: 'UPDATE_ORDER'; payload: Order }
-  | { type: 'DELETE_ORDER'; payload: string };
+  | { type: 'SET_LOADING'; payload: boolean };
 
 const initialState: StoreState = {
-  products: SAMPLE_PRODUCTS,
+  products: [],
   cart: [],
   orders: [],
   currentView: 'store',
@@ -34,51 +32,20 @@ const initialState: StoreState = {
 
 function storeReducer(state: StoreState, action: StoreAction): StoreState {
   switch (action.type) {
+    case 'SET_PRODUCTS':
+      return { ...state, products: action.payload };
+    
+    case 'SET_ORDERS':
+      return { ...state, orders: action.payload };
+    
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    
     case 'SET_VIEW':
       return { ...state, currentView: action.payload };
     
     case 'SET_SELECTED_PRODUCT':
       return { ...state, selectedProduct: action.payload };
-    
-    case 'ADD_PRODUCT':
-      return {
-        ...state,
-        products: [...state.products, action.payload]
-      };
-    
-    case 'UPDATE_PRODUCT':
-      return {
-        ...state,
-        products: state.products.map(product =>
-          product.id === action.payload.id ? action.payload : product
-        )
-      };
-    
-    case 'DELETE_PRODUCT':
-      return {
-        ...state,
-        products: state.products.filter(product => product.id !== action.payload)
-      };
-    
-    case 'CREATE_ORDER':
-      return {
-        ...state,
-        orders: [...state.orders, action.payload]
-      };
-    
-    case 'UPDATE_ORDER':
-      return {
-        ...state,
-        orders: state.orders.map(order =>
-          order.id === action.payload.id ? action.payload : order
-        )
-      };
-    
-    case 'DELETE_ORDER':
-      return {
-        ...state,
-        orders: state.orders.filter(order => order.id !== action.payload)
-      };
     
     default:
       return state;
@@ -88,13 +55,61 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
 const StoreContext = createContext<{
   state: StoreState;
   dispatch: React.Dispatch<StoreAction>;
+  productActions: {
+    addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
+    updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+    deleteProduct: (id: string) => Promise<void>;
+  };
+  orderActions: {
+    addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
+    updateOrder: (id: string, order: Partial<Order>) => Promise<void>;
+    deleteOrder: (id: string) => Promise<void>;
+  };
 } | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initialState);
+  const { 
+    products, 
+    loading: productsLoading, 
+    addProduct, 
+    updateProduct, 
+    deleteProduct 
+  } = useFirebaseProducts();
+  const { 
+    orders, 
+    loading: ordersLoading, 
+    addOrder, 
+    updateOrder, 
+    deleteOrder 
+  } = useFirebaseOrders();
+
+  useEffect(() => {
+    dispatch({ type: 'SET_PRODUCTS', payload: products });
+  }, [products]);
+
+  useEffect(() => {
+    dispatch({ type: 'SET_ORDERS', payload: orders });
+  }, [orders]);
+
+  useEffect(() => {
+    dispatch({ type: 'SET_LOADING', payload: productsLoading || ordersLoading });
+  }, [productsLoading, ordersLoading]);
+
+  const productActions = {
+    addProduct,
+    updateProduct,
+    deleteProduct
+  };
+
+  const orderActions = {
+    addOrder,
+    updateOrder,
+    deleteOrder
+  };
   
   return (
-    <StoreContext.Provider value={{ state, dispatch }}>
+    <StoreContext.Provider value={{ state, dispatch, productActions, orderActions }}>
       {children}
     </StoreContext.Provider>
   );

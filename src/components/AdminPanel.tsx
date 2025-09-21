@@ -2,19 +2,11 @@ import React, { useState } from "react";
 import { Plus, Edit2, Trash2, ArrowLeft, Settings } from "lucide-react";
 import { useStore } from "../contexts/StoreContext";
 import { Product, Order } from "../types";
-import { db } from "../config/firebase";
-import {
-  collection,
-  addDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ALGERIAN_WILAYAS } from "../data/wilayas";
 
 export default function AdminPanel() {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, productActions, orderActions } = useStore();
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"products" | "orders" | "delivery">("products");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -41,13 +33,10 @@ export default function AdminPanel() {
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Submitting product:", productForm);
 
     try {
       if (editingProduct) {
-        console.log("Updating product:", editingProduct.id);
-        const productRef = doc(db, "products", editingProduct.id);
-        await updateDoc(productRef, {
+        await productActions.updateProduct(editingProduct.id, {
           name: productForm.name || "",
           price: Number(productForm.price) || 0,
           originalPrice: Number(productForm.originalPrice) || 0,
@@ -57,8 +46,7 @@ export default function AdminPanel() {
           inStock: productForm.inStock ?? true,
         });
       } else {
-        console.log("Adding new product");
-        await addDoc(collection(db, "products"), {
+        await productActions.addProduct({
           name: productForm.name || "",
           price: Number(productForm.price) || 0,
           originalPrice: Number(productForm.originalPrice) || 0,
@@ -68,10 +56,9 @@ export default function AdminPanel() {
           inStock: productForm.inStock ?? true,
         });
       }
-      console.log("Product saved successfully");
     } catch (err) {
       console.error("Error saving product:", err);
-      alert("خطأ في حفظ المنتج: " + err.message);
+      alert("خطأ في حفظ المنتج: " + (err as Error).message);
     }
 
     setShowProductForm(false);
@@ -96,16 +83,17 @@ export default function AdminPanel() {
   const handleDeleteProduct = async (id: string) => {
     if (confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
       try {
-        await deleteDoc(doc(db, "products", id));
+        await productActions.deleteProduct(id);
       } catch (err) {
         console.error("Error deleting product:", err);
+        alert("خطأ في حذف المنتج: " + (err as Error).message);
       }
     }
   };
 
   const handleDeleteOrder = (id: string) => {
     if (confirm("هل أنت متأكد من حذف هذا الطلب؟")) {
-      dispatch({ type: "DELETE_ORDER", payload: id });
+      orderActions.deleteOrder(id);
     }
   };
 
@@ -136,7 +124,10 @@ export default function AdminPanel() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
             <button
-              onClick={() => dispatch({ type: "SET_VIEW", payload: "store" })}
+              onClick={() => {
+                window.history.pushState({}, '', '/');
+                dispatch({ type: "SET_VIEW", payload: "store" });
+              }}
               className="mr-4 p-2 hover:bg-pink-100 rounded-full transition-colors"
             >
               <ArrowLeft className="h-5 w-5 text-pink-600" />

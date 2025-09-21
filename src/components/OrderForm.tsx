@@ -6,7 +6,7 @@ import { ALGERIAN_WILAYAS } from '../data/wilayas';
 import { Customer, Order } from '../types';
 
 export default function OrderForm() {
-  const { state, dispatch } = useStore();
+  const { state, dispatch, orderActions } = useStore();
   const { t, isRTL } = useLanguage();
   const [customer, setCustomer] = useState<Customer>({
     firstName: '',
@@ -65,7 +65,7 @@ export default function OrderForm() {
       createdAt: new Date().toISOString()
     };
     
-    dispatch({ type: 'CREATE_ORDER', payload: order });
+    await orderActions.addOrder(order);
     alert(t('order_success'));
     dispatch({ type: 'SET_VIEW', payload: 'store' });
     dispatch({ type: 'SET_SELECTED_PRODUCT', payload: null });
@@ -76,7 +76,10 @@ export default function OrderForm() {
       <div className="max-w-4xl mx-auto">
         <div className={`flex items-center mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <button
-            onClick={() => dispatch({ type: 'SET_VIEW', payload: 'store' })}
+            onClick={() => {
+              window.history.pushState({}, '', '/');
+              dispatch({ type: 'SET_VIEW', payload: 'store' });
+            }}
             className={`${isRTL ? 'ml-4' : 'mr-4'} p-3 hover:bg-pink-100 rounded-full smooth-transition glow-pink bg-white/80 backdrop-blur-sm`}
           >
             <ArrowLeft className="h-5 w-5 text-pink-600" />

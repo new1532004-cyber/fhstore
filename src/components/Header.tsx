@@ -41,7 +41,10 @@ export default function Header() {
               {user ? (
                 <>
                   <button
-                    onClick={() => dispatch({ type: 'SET_VIEW', payload: 'admin' })}
+                    onClick={() => {
+                      window.history.pushState({}, '', '/admin');
+                      dispatch({ type: 'SET_VIEW', payload: 'admin' });
+                    }}
                     className="px-4 py-2 bg-white hover:bg-pink-50 text-pink-600 rounded-full smooth-transition font-bold"
                     title={t('admin.mode')}
                   >
@@ -58,7 +61,10 @@ export default function Header() {
                 </>
               ) : (
                 <button
-                  onClick={() => dispatch({ type: 'SET_VIEW', payload: 'admin' })}
+                  onClick={() => {
+                    window.history.pushState({}, '', '/admin');
+                    dispatch({ type: 'SET_VIEW', payload: 'admin' });
+                  }}
                   className="px-4 py-2 bg-white hover:bg-pink-50 text-pink-600 rounded-full smooth-transition font-bold"
                 >
                   <User className="h-4 w-4 inline mr-2" />

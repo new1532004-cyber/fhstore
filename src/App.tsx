@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StoreProvider, useStore } from './contexts/StoreContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -11,6 +11,16 @@ import LoginForm from './components/LoginForm';
 function AppContent() {
   const { state } = useStore();
   const { user, loading } = useAuth();
+
+  // Handle routing based on URL
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/admin') {
+      // Don't change view automatically, let the component handle it
+    } else if (path.startsWith('/order')) {
+      // Handle order routing if needed
+    }
+  }, []);
   
   if (loading) {
     return (
@@ -24,7 +34,9 @@ function AppContent() {
   }
   
   const renderCurrentView = () => {
-    if (state.currentView === 'admin') {
+    const path = window.location.pathname;
+    
+    if (path === '/admin' || state.currentView === 'admin') {
       return user ? <AdminPanel /> : <LoginForm />;
     }
     
