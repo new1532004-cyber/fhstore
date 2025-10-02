@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { Product, CartItem, Order, Customer } from '../types';
-import { useFirebaseProducts } from '../hooks/useFirebaseProducts';
-import { useFirebaseOrders } from '../hooks/useFirebaseOrders';
+import { useSupabaseProducts } from '../hooks/useSupabaseProducts';
+import { useSupabaseOrders } from '../hooks/useSupabaseOrders';
 
 interface StoreState {
   products: Product[];
@@ -59,6 +59,7 @@ const StoreContext = createContext<{
     addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
     updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
     deleteProduct: (id: string) => Promise<void>;
+    uploadImage: (file: File) => Promise<string>;
   };
   orderActions: {
     addOrder: (order: Omit<Order, 'id'>) => Promise<void>;
@@ -69,20 +70,21 @@ const StoreContext = createContext<{
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(storeReducer, initialState);
-  const { 
-    products, 
-    loading: productsLoading, 
-    addProduct, 
-    updateProduct, 
-    deleteProduct 
-  } = useFirebaseProducts();
-  const { 
-    orders, 
-    loading: ordersLoading, 
-    addOrder, 
-    updateOrder, 
-    deleteOrder 
-  } = useFirebaseOrders();
+  const {
+    products,
+    loading: productsLoading,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    uploadImage
+  } = useSupabaseProducts();
+  const {
+    orders,
+    loading: ordersLoading,
+    addOrder,
+    updateOrder,
+    deleteOrder
+  } = useSupabaseOrders();
 
   useEffect(() => {
     dispatch({ type: 'SET_PRODUCTS', payload: products });
@@ -99,7 +101,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const productActions = {
     addProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    uploadImage
   };
 
   const orderActions = {

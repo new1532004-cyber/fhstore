@@ -82,8 +82,6 @@ const translations = {
     'save': 'حفظ',
     'add': 'إضافة',
     'name': 'الاسم',
-    'phone': 'الهاتف',
-    'wilaya': 'الولاية',
     'delivery': 'التوصيل',
     'home': 'المنزل',
     'desk': 'المكتب'
@@ -158,8 +156,6 @@ const translations = {
     'save': 'Enregistrer',
     'add': 'Ajouter',
     'name': 'Nom',
-    'phone': 'Téléphone',
-    'wilaya': 'Wilaya',
     'delivery': 'Livraison',
     'home': 'Domicile',
     'desk': 'Bureau'
@@ -234,8 +230,6 @@ const translations = {
     'save': 'Save',
     'add': 'Add',
     'name': 'Name',
-    'phone': 'Phone',
-    'wilaya': 'Wilaya',
     'delivery': 'Delivery',
     'home': 'Home',
     'desk': 'Office'
