@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Edit2, Trash2, ArrowLeft, Settings, Upload, Image as ImageIcon, X } from "lucide-react";
+import { Plus, CreditCard as Edit2, Trash2, ArrowLeft, Settings, Upload, Image as ImageIcon, X } from "lucide-react";
 import { useStore } from "../contexts/StoreContext";
 import { Product, Order } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
